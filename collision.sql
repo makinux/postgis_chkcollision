@@ -26,7 +26,7 @@ begin
 	--各divが衝突しているかチェック
 	foreach matrix slice 1 in array matrix_array
 	loop
-		open cu for execute 'select id,(geom && (select st_collect(geom) from collision where id<>''' || matrix[1] || ''')) as intersect from collision where id=''' || matrix[1] || '''';
+		open cu for execute 'select id,ST_Intersects(geom,(select st_collect(geom) from collision where id<>''' || matrix[1] || ''')) as intersect from collision where id=''' || matrix[1] || '''';
 		loop
 			fetch cu into rec;
 				if not found then
@@ -76,7 +76,7 @@ begin
 	execute 'update collision set geom=st_translate(geom,''' || target_x || ''',''' || target_y || ''') where id=''' || matrix[1] || ''';';
 	
 	--移動後に衝突しているかチェック
-	execute 'select id,(geom && (select st_collect(geom) from collision where id<>''' || matrix[1] || ''')) as intersect from collision where id=''' || matrix[1] || '''' into rec;
+	execute 'select id,ST_Intersects(geom,(select st_collect(geom) from collision where id<>''' || matrix[1] || ''')) as intersect from collision where id=''' || matrix[1] || '''' into rec;
 	if rec.intersect=true then
 		raise notice 'matrix is intersect(chkcollision): id:%, target_x:% target_y:%', matrix[1],target_x,target_y;
 		--衝突しなくなるまで再帰
