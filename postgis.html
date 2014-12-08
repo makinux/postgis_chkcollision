@@ -1,0 +1,49 @@
+<!doctype html>
+<head>
+  <title></title>
+  <style>
+    body { margin: 0; }
+    div {
+		position: absolute;
+		border: 1px solid #000;
+		background-color: #FFF;
+    }
+  </style>
+  <script src='http://code.jquery.com/jquery-2.1.0.min.js'></script>
+</head>
+<body>
+<div id='bbox1' style="width:100px; height:100px; left:210px; top:200px;"></div>
+<div id='bbox2' style="width:100px; height:100px; left:220px; top:230px;"></div>
+<div id='bbox3' style="width:100px; height:100px; left:210px; top:210px;"></div>
+
+
+</body>
+<script type='text/javascript'>
+$(document).ready(function(){
+	var polygon=[];
+	$("div").each(function(i){
+		var width=$(this).width();
+		var height=$(this).height();
+		var position = $(this).position();
+		polygon.push({id:$(this).attr("id"),positions:position.left+" "+position.top+","+position.left+" "+(position.top+height)+","+(position.left+width)+" "+(position.top+height)+","+(position.left+width)+" "+position.top+","+position.left+" "+position.top});
+	});
+	var param={polygons:polygon};
+	
+	// PostGISにDIV座標を送り計算します
+	$.ajax({
+		url: "collision.php",
+		type: "POST",
+		async: false,
+		datatype: "json",
+		data: param
+	}).done(function(response){
+		var data =JSON.parse(response);
+		//計算結果をDIVに適用します。
+		for(val in data){
+			$("#"+data[val].id).css({top:data[val].x+"px",left:data[val].y+"px"});
+		}
+	});
+	console.log(polygon);
+});
+
+</script>
